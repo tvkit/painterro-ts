@@ -1,6 +1,3 @@
-// /// <reference path="../../types.d.ts" />
-
-import "../../types";
 import "../css/bar-styles.css";
 import "../css/icons/ptroiconfont.css";
 import "../css/styles.css";
@@ -8,7 +5,7 @@ import isMobile from "ismobilejs";
 import ColorPicker, { HexToRGB, rgbToHex } from "./colorPicker";
 import ControlBuilder from "./controlbuilder";
 import Inserter from "./inserter";
-import { anyFunc, anyType, ColorWidgetState, Control, def, DocumentHelper, Hotkey, ImageSaver, ITool, ITools, Main, Parameters, Size } from "./interfaces";
+import { anyFunc, anyType, ColorWidgetState, Control, def, DocumentHelper, Hotkey, ImageSaver, IMain, ITool, ITools, Parameters, Size } from "./interfaces";
 import { setDefaults, setParam } from "./params";
 import PrimitiveTool from "./primitive";
 import Resizer from "./resizer";
@@ -31,7 +28,11 @@ interface EventHandler {
   [index: string]: (...args: any[]) => void;
 }
 
-class PainterroProc implements Main {
+interface Painterro {
+  show(openImage?: string, originalMime?: string): void;
+}
+
+class Main implements IMain, Painterro {
   public params: Parameters;
   private settings: Settings;
   public doc: Document;
@@ -79,8 +80,8 @@ class PainterroProc implements Main {
   private fileInputId: string;
   private hasUnsaved: boolean = false;
   private ratioRelation?: number | boolean;
-  private loadedName: string;
-  private saveBtn: HTMLButtonElement;
+  public loadedName: string;
+  private saveBtn?: HTMLButtonElement;
   private info: HTMLElement;
   private substrate: HTMLElement;
   private imageSaver: ImageSaver;
@@ -699,8 +700,9 @@ class PainterroProc implements Main {
     // this.doc = this.iframe.contentDocument || this.iframe.contentWindow.document;
     // this.doc.body.innerHTML = html;
     const buttonId = this.tools.save.buttonId;
-    this.saveBtn = this.baseEl.querySelector(`#${buttonId}`)!;
-    if (buttonId && this.saveBtn) {
+    const saveBtn = (buttonId && (this.baseEl.querySelector(`#${buttonId}`) as HTMLButtonElement)) || undefined;
+    if (saveBtn) {
+      this.saveBtn = saveBtn;
       this.saveBtn.setAttribute("disabled", "true");
     }
     this.body = this.doc.body;
@@ -877,7 +879,7 @@ class PainterroProc implements Main {
   //   throw new Error('Method not implemented.');
   // }
 
-  getElemByIdSafe(id?: string): HTMLInputElement {
+  getElemByIdSafe = (id?: string): HTMLInputElement => {
     const el = id && (document.getElementById(id) as HTMLInputElement); // observed requests for INPUT
     if (!el) {
       throw new Error(
@@ -885,9 +887,9 @@ class PainterroProc implements Main {
       );
     }
     return el;
-  }
+  };
 
-  setToolEnabled(tool: ITool, state?: boolean) {
+  setToolEnabled = (tool: ITool, state?: boolean) => {
     if (tool.buttonId) {
       const btn = this.getElemByIdSafe(tool.buttonId);
       if (state) {
@@ -896,21 +898,21 @@ class PainterroProc implements Main {
         btn.setAttribute("disabled", "true");
       }
     }
-  }
+  };
 
-  getAsUri(type: string, quality?: number) {
+  getAsUri = (type: string, quality?: number) => {
     let realQuality = quality;
     if (realQuality === undefined) {
       realQuality = 0.92;
     }
     return this.canvas.toDataURL(type, realQuality);
-  }
+  };
 
-  getBtnEl(tool: ITool): HTMLButtonElement {
+  getBtnEl = (tool: ITool): HTMLButtonElement => {
     return this.getElemByIdSafe(tool.buttonId) as HTMLButtonElement;
-  }
+  };
 
-  save() {
+  save = () => {
     if (this.saving) {
       return this;
     }
@@ -944,15 +946,15 @@ class PainterroProc implements Main {
       this.saving = false;
     }
     return this;
-  }
+  };
 
-  close() {
+  close = () => {
     if (this.params.onClose !== undefined) {
       this.params.onClose();
     }
-  }
+  };
 
-  closeActiveTool(doNotSelect?: boolean) {
+  closeActiveTool = (doNotSelect?: boolean) => {
     if (this.activeTool !== undefined) {
       if (this.activeTool.close !== undefined) {
         this.activeTool.close();
@@ -967,9 +969,9 @@ class PainterroProc implements Main {
     if (doNotSelect !== true) {
       this.setActiveTool(this.defaultTool);
     }
-  }
+  };
 
-  handleToolEvent(eventHandler: string, event: Event) {
+  handleToolEvent = (eventHandler: string, event: Event) => {
     if (this.activeTool?.eventDelegate) {
       const delegate = this.activeTool.eventDelegate();
       const handler = anyFunc(delegate)[eventHandler];
@@ -978,9 +980,17 @@ class PainterroProc implements Main {
       }
     }
     return false;
-  }
+  };
 
-  handleClipCopyEvent(evt: KeyboardEvent) {
+  clipCopyBlob = async (canvas: HTMLCanvasElement, format: string): Promise<void> => {
+    const data = new Promise((resolve: (blob: Blob) => void) => canvas.toBlob(resolve as BlobCallback, format, 1.0)); // as ClipboardItemData;
+    const record = { [format]: data } as Record<string, ClipboardItemData>;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const item = new ClipboardItem(record);
+    await navigator.clipboard.write([item]);
+  };
+
+  handleClipCopyEvent = (evt: KeyboardEvent) => {
     let handled = false;
     const clipFormat = "image/png";
     if (evt.keyCode === Hotkey.c && (evt.ctrlKey || evt.metaKey)) {
@@ -993,29 +1003,17 @@ class PainterroProc implements Main {
         tmpCan.height = h;
         const tmpCtx = tmpCan.getContext("2d")!;
         tmpCtx.drawImage(this.canvas, -a.tx, -a.ty);
-        tmpCan.toBlob(
-          (b) => {
-            void navigator.clipboard.write([new ClipboardItem({ [clipFormat]: b! })]);
-          },
-          clipFormat,
-          1.0
-        );
+        void this.clipCopyBlob(tmpCan, clipFormat);
         handled = true;
       } else {
-        this.canvas.toBlob(
-          (b) => {
-            void navigator.clipboard.write([new ClipboardItem({ [clipFormat]: b! })]);
-          },
-          clipFormat,
-          1.0
-        );
+        void this.clipCopyBlob(this.canvas, clipFormat);
         handled = true;
       }
     }
     return handled;
-  }
+  };
 
-  zoomImage(zoom: ZoomInfo, forceWheenDelta?: boolean) {
+  zoomImage = (zoom: ZoomInfo, forceWheenDelta?: boolean) => {
     const { wheelDelta, clientX, clientY } = zoom;
     let whD = wheelDelta;
     if (forceWheenDelta !== undefined) {
@@ -1044,9 +1042,9 @@ class PainterroProc implements Main {
       this.scroller.scrollLeft = this.curCordX / this.getScale() - (clientX - this.wrapper.documentOffsetLeft);
       this.scroller.scrollTop = this.curCordY / this.getScale() - (clientY - this.wrapper.documentOffsetTop);
     }
-  }
+  };
 
-  initEventHandlers() {
+  initEventHandlers = () => {
     const mousedown = (evt: MouseEvent): void => {
       if (this.shown) {
         const target = evt.target as HTMLElement;
@@ -1281,9 +1279,9 @@ class PainterroProc implements Main {
       },
     };
     this.listenersInstalled = false;
-  }
+  };
 
-  attachEventHandlers() {
+  attachEventHandlers = () => {
     if (this.listenersInstalled) {
       return;
     }
@@ -1297,9 +1295,9 @@ class PainterroProc implements Main {
       window.addEventListener(key, value, { passive: false });
     });
     this.listenersInstalled = true;
-  }
+  };
 
-  removeEventHandlers() {
+  removeEventHandlers = () => {
     if (!this.listenersInstalled) {
       return;
     }
@@ -1311,30 +1309,30 @@ class PainterroProc implements Main {
     });
 
     this.listenersInstalled = false;
-  }
+  };
 
-  elLeft() {
+  elLeft = () => {
     return this.toolContainer.documentOffsetLeft + this.scroller.scrollLeft;
-  }
+  };
 
-  elTop() {
+  elTop = () => {
     return this.toolContainer.documentOffsetTop + this.scroller.scrollTop;
-  }
+  };
 
-  fitImage(img: HTMLImageElement, mimetype: string) {
+  fitImage = (img: HTMLImageElement, mimetype: string) => {
     this.loadedImageType = mimetype;
     this.resize(img.naturalWidth, img.naturalHeight);
     this.ctx.drawImage(img, 0, 0);
     this.zoomFactor = this.wrapper.documentClientHeight / this.size.h - 0.2;
     this.adjustSizeFull();
     this.worklog.captureState();
-  }
+  };
 
-  loadImage(source: string, mimetype: string) {
+  loadImage = (source: string, mimetype: string) => {
     this.inserter.handleOpen(source, mimetype);
-  }
+  };
 
-  show(openImage: string, originalMime: string) {
+  show = (openImage: string, originalMime: string) => {
     this.shown = true;
     this.scrollWidth = getScrollbarWidth();
     if (this.isMobile) {
@@ -1356,9 +1354,9 @@ class PainterroProc implements Main {
     }
     this.attachEventHandlers();
     return this;
-  }
+  };
 
-  hide() {
+  hide = () => {
     if (this.isMobile) {
       anyType(this.body.style)["overflow-y"] = this.origOverflowY;
     }
@@ -1372,22 +1370,22 @@ class PainterroProc implements Main {
       this.params.onHide();
     }
     return this;
-  }
+  };
 
-  openFile(f: File) {
+  openFile = (f: File) => {
     if (!f) {
       return;
     }
     this.loadedName = trim((f.name || "").replace(/\..+$/, ""));
     const dataUrl = (window.URL ? window.URL : window.webkitURL).createObjectURL(f);
     this.loadImage(dataUrl, f.type);
-  }
+  };
 
-  getScale() {
+  getScale = () => {
     return parseInt(this.canvas.getAttribute("width") || "") / this.canvas.offsetWidth || 1;
-  }
+  };
 
-  adjustSizeFull() {
+  adjustSizeFull = () => {
     const ratio = this.wrapper.documentClientWidth / this.wrapper.documentClientHeight;
     if (this.zoom === false) {
       if (this.size.w > this.wrapper.documentClientWidth || this.size.h > this.wrapper.documentClientHeight) {
@@ -1415,9 +1413,9 @@ class PainterroProc implements Main {
     }
     this.syncToolElement();
     this.select.draw();
-  }
+  };
 
-  resize(x: number, y: number) {
+  resize = (x: number, y: number) => {
     this.info.innerHTML = `${x}<span>x</span>${y}<br>${(this.originalMime || "png").replace("image/", "")}`;
     this.size = {
       w: x,
@@ -1426,9 +1424,9 @@ class PainterroProc implements Main {
     };
     this.canvas.setAttribute("width", this.size.w.toString());
     this.canvas.setAttribute("height", this.size.h.toString());
-  }
+  };
 
-  syncToolElement() {
+  syncToolElement = () => {
     const w = Math.round(this.canvas.documentClientWidth);
     const l = this.canvas.offsetLeft;
     const h = Math.round(this.canvas.documentClientHeight);
@@ -1441,9 +1439,9 @@ class PainterroProc implements Main {
     this.substrate.style.width = `${w}px`;
     this.substrate.style.top = `${t}px`;
     this.substrate.style.height = `${h}px`;
-  }
+  };
 
-  clear() {
+  clear = () => {
     let w = this.wrapper.clientWidth;
     let h = this.wrapper.clientHeight;
     const defaultSize = (typeof this.params.defaultSize === "string" && this.params.defaultSize.split(/^ *\d+ *[xX] *\d+ *$/)?.slice(1)) || undefined;
@@ -1497,17 +1495,17 @@ class PainterroProc implements Main {
         { once: true }
       );
     }
-  }
+  };
 
-  clearBackground() {
+  clearBackground = () => {
     this.ctx.beginPath();
     this.ctx.clearRect(0, 0, this.size.w, this.size.h);
     this.ctx.rect(0, 0, this.size.w, this.size.h);
     this.ctx.fillStyle = this.currentBackground;
     this.ctx.fill();
-  }
+  };
 
-  setActiveTool(b: ITool): void {
+  setActiveTool = (b: ITool): void => {
     this.activeTool = b;
     this.zoomButtonActive = false;
     const btnEl = this.activeTool && this.getBtnEl(this.activeTool);
@@ -1567,10 +1565,10 @@ class PainterroProc implements Main {
       }
     });
     b.activate();
-  }
+  };
 }
 
-const factory = (params: Parameters) => new PainterroProc(params);
+const factory = (params: Parameters) => new Main(params);
 export default factory;
-
+export { Painterro };
 // export default params => new PainterroProc(params);

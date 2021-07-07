@@ -1,8 +1,8 @@
-import { anyFunc, AnyFunc, Area, DocumentHelper, Hotkey, IPainterroSelecter, Main, SelectionCallback } from "./interfaces";
+import { anyFunc, AnyFunc, Area, DocumentHelper, Hotkey, IMain, IPainterroSelecter, SelectionCallback } from "./interfaces";
 import { clearSelection } from "./utils";
 
 export default class PainterroSelecter implements IPainterroSelecter {
-  private main: Main;
+  private main: IMain;
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private wrapper: HTMLDivElement & DocumentHelper;
@@ -22,7 +22,7 @@ export default class PainterroSelecter implements IPainterroSelecter {
   private right: number = 0;
   private bottom: number = 0;
 
-  constructor(main: Main, selectionCallback: SelectionCallback) {
+  constructor(main: IMain, selectionCallback: SelectionCallback) {
     this.main = main;
     this.canvas = main.canvas;
     this.wrapper = main.wrapper;
@@ -65,7 +65,7 @@ export default class PainterroSelecter implements IPainterroSelecter {
     this.areaionCallback(false);
   }
 
-  static code() {
+  static code = () => {
     return (
       '<div class="ptro-crp-rect" hidden>' +
       '<div class="ptro-crp-l select-handler"></div><div class="ptro-crp-r select-handler"></div>' +
@@ -74,22 +74,22 @@ export default class PainterroSelecter implements IPainterroSelecter {
       '<div class="ptro-crp-bl select-handler"></div><div class="ptro-crp-br select-handler"></div>' +
       "</div>"
     );
-  }
+  };
 
-  activate() {
+  activate = () => {
     this.area.activated = true;
     this.areaionCallback(false);
-  }
+  };
 
-  doCrop() {
+  doCrop = () => {
     const imgData = this.ctx.getImageData(0, 0, this.main.size.w, this.main.size.h);
     this.main.resize(this.area.bx - this.area.tx, this.area.by - this.area.ty);
     this.main.ctx.putImageData(imgData, -this.area.tx, -this.area.ty);
     this.main.adjustSizeFull();
     this.main.worklog.captureState();
-  }
+  };
 
-  doPixelize() {
+  doPixelize = () => {
     const tx = this.area.tx;
     const ty = this.area.ty;
     const width = this.area.width;
@@ -157,18 +157,18 @@ export default class PainterroSelecter implements IPainterroSelecter {
       }
     }
     this.main.worklog.captureState();
-  }
+  };
 
-  doClearArea() {
+  doClearArea = () => {
     this.ctx.beginPath();
     this.ctx.clearRect(this.area.tx, this.area.ty, this.area.bx - this.area.tx, this.area.by - this.area.ty);
     this.ctx.rect(this.area.tx, this.area.ty, this.area.bx - this.area.tx, this.area.by - this.area.ty);
     this.ctx.fillStyle = this.main.currentBackground;
     this.ctx.fill();
     this.main.worklog.captureState();
-  }
+  };
 
-  selectAll() {
+  selectAll = () => {
     this.setLeft(0);
     this.setRight(0);
     this.setBottom(0);
@@ -178,13 +178,13 @@ export default class PainterroSelecter implements IPainterroSelecter {
     if (this.area.activated) {
       this.areaionCallback(!this.imagePlaced && !!this.area.rect && this.area.rect.clientWidth > 0 && this.area.rect.clientHeight > 0);
     }
-  }
+  };
 
-  getScale() {
+  getScale = () => {
     return this.canvas.clientWidth / (parseInt(this.canvas.getAttribute("width") || "") || this.canvas.clientWidth);
-  }
+  };
 
-  reCalcCropperCords() {
+  reCalcCropperCords = () => {
     const ratio = this.getScale();
     this.area.topl = [Math.round((this.rectLeft() - this.main.elLeft()) / ratio), Math.round((this.rectTop() - this.main.elTop()) / ratio)];
 
@@ -192,9 +192,9 @@ export default class PainterroSelecter implements IPainterroSelecter {
       Math.round(this.area.tx + (this.area.rect.clientWidth + 2) / ratio),
       Math.round(this.area.ty + (this.area.rect.clientHeight + 2) / ratio),
     ];
-  }
+  };
 
-  adjustPosition() {
+  adjustPosition = () => {
     if (!this.shown) {
       return;
     }
@@ -204,9 +204,9 @@ export default class PainterroSelecter implements IPainterroSelecter {
     this.setRight(0);
     this.setRight(this.canvas.clientWidth - this.area.bx * ratio);
     this.setBottom(this.canvas.clientHeight - this.area.by * ratio);
-  }
+  };
 
-  placeAt(l: number, t: number, r: number, b: number, img: HTMLImageElement) {
+  placeAt = (l: number, t: number, r: number, b: number, img: HTMLImageElement) => {
     this.main.closeActiveTool(true);
     this.main.setActiveTool(this.main.tools.select);
     const scale = this.getScale();
@@ -235,22 +235,22 @@ export default class PainterroSelecter implements IPainterroSelecter {
     this.reCalcCropperCords();
     this.imagePlaced = true;
     this.placedRatio = img.naturalWidth / img.naturalHeight;
-  }
+  };
 
-  finishPlacing() {
+  finishPlacing = () => {
     this.imagePlaced = false;
     this.main.select.area.rect.style.backgroundImage = "none";
     this.main.inserter.insert(this.area.tx, this.area.ty, this.area.bx - this.area.tx, this.area.by - this.area.ty);
-  }
+  };
 
-  cancelPlacing() {
+  cancelPlacing = () => {
     this.imagePlaced = false;
     this.main.select.area.rect.style.backgroundImage = "none";
     this.hide();
     this.main.worklog.undoState();
-  }
+  };
 
-  handleKeyDown(evt: KeyboardEvent) {
+  handleKeyDown = (evt: KeyboardEvent) => {
     if (this.main.inserter.handleKeyDown?.(evt)) {
       return true;
     }
@@ -274,18 +274,18 @@ export default class PainterroSelecter implements IPainterroSelecter {
       return true;
     }
     return false;
-  }
+  };
 
-  handleMouseDown(event: MouseEvent) {
-    const mainClass = (event.target as HTMLElement)?.classList[0];
+  handleMouseDown = (evt: MouseEvent) => {
+    const mainClass = (evt.target as HTMLElement)?.classList[0];
     const mousDownCallbacks: AnyFunc = {
       "ptro-crp-el": () => {
         if (this.area.activated) {
           if (this.imagePlaced) {
             this.finishPlacing();
           }
-          const x = event.clientX - this.main.elLeft() + this.main.scroller.scrollLeft;
-          const y = event.clientY - this.main.elTop() + this.main.scroller.scrollTop;
+          const x = evt.clientX - this.main.elLeft() + this.main.scroller.scrollLeft;
+          const y = evt.clientY - this.main.elTop() + this.main.scroller.scrollTop;
 
           this.setLeft(x);
           this.setTop(y);
@@ -300,8 +300,8 @@ export default class PainterroSelecter implements IPainterroSelecter {
       },
       "ptro-crp-rect": () => {
         this.area.moving = true;
-        this.area.xHandle = event.clientX - this.rectLeft() + this.main.scroller.scrollLeft;
-        this.area.yHandle = event.clientY - this.rectTop() + this.main.scroller.scrollTop;
+        this.area.xHandle = evt.clientX - this.rectLeft() + this.main.scroller.scrollLeft;
+        this.area.yHandle = evt.clientY - this.rectTop() + this.main.scroller.scrollTop;
       },
       "ptro-crp-tr": () => {
         this.area.resizingT = true;
@@ -338,29 +338,29 @@ export default class PainterroSelecter implements IPainterroSelecter {
         this.main.select.area.rect.style.backgroundImage = `url(${this.placedDataLow})`;
       }
     }
-  }
+  };
 
-  setLeft(v: number) {
+  setLeft = (v: number) => {
     this.left = v;
     this.area.rect.style.left = `${v}px`;
-  }
+  };
 
-  setRight(v: number) {
+  setRight = (v: number) => {
     this.right = v;
     this.area.rect.style.right = `${v}px`;
-  }
+  };
 
-  setTop(v: number) {
+  setTop = (v: number) => {
     this.top = v;
     this.area.rect.style.top = `${v}px`;
-  }
+  };
 
-  setBottom(v: number) {
+  setBottom = (v: number) => {
     this.bottom = v;
     this.area.rect.style.bottom = `${v}px`;
-  }
+  };
 
-  handleMouseMove(evt: MouseEvent) {
+  handleMouseMove = (evt: MouseEvent) => {
     if (!this.area.activated) {
       return;
     }
@@ -456,39 +456,39 @@ export default class PainterroSelecter implements IPainterroSelecter {
         clearSelection();
       }
     }
-  }
+  };
 
-  leftKeepRatio() {
+  leftKeepRatio = () => {
     const newW = this.area.rect.clientHeight * this.placedRatio;
     const suggLeft = this.main.elLeft() + (this.area.el.clientWidth - this.right - newW - 2);
     const absLeft = this.fixCropperLeft(suggLeft);
     this.setLeft(absLeft - this.main.elLeft());
-  }
+  };
 
-  topKeepRatio() {
+  topKeepRatio = () => {
     const newH = this.area.rect.clientWidth / this.placedRatio;
     const absTop = this.fixCropperTop(this.main.elTop() + (this.area.el.clientHeight - this.bottom - newH - 2));
     this.setTop(absTop - this.main.elTop());
-  }
+  };
 
-  bottomKeepRatio() {
+  bottomKeepRatio = () => {
     const newH = this.area.rect.clientWidth / this.placedRatio;
     const absBottom = this.fixCropperBottom(this.main.elTop() + this.top + newH + 2);
     this.setBottom(this.area.el.clientHeight + this.main.elTop() - absBottom);
-  }
+  };
 
-  rightKeepRatio() {
+  rightKeepRatio = () => {
     const newW = this.area.rect.clientHeight * this.placedRatio;
     const absRight = this.fixCropperRight(this.main.elLeft() + this.left + newW + 2);
     this.setRight(this.area.el.clientWidth + this.main.elLeft() - absRight);
-  }
+  };
 
-  show() {
+  show = () => {
     this.shown = true;
     this.area.rect.removeAttribute("hidden");
-  }
+  };
 
-  handleMouseUp() {
+  handleMouseUp = () => {
     if (this.area.activated) {
       this.areaionCallback(!this.imagePlaced && this.area.rect.clientWidth > 0 && this.area.rect.clientHeight > 0);
     }
@@ -500,23 +500,23 @@ export default class PainterroSelecter implements IPainterroSelecter {
     if (this.imagePlaced) {
       this.main.select.area.rect.style.backgroundImage = `url(${this.placedData})`;
     }
-  }
+  };
 
-  close() {
+  close = () => {
     if (this.imagePlaced) {
       this.finishPlacing();
     }
     this.area.activated = false;
     this.hide();
-  }
+  };
 
-  hide() {
+  hide = () => {
     this.area.rect.setAttribute("hidden", "true");
     this.shown = false;
     this.areaionCallback(false);
-  }
+  };
 
-  draw() {
+  draw = () => {
     if (this.area.topl) {
       const ratio = this.canvas.clientWidth / parseInt(this.canvas.getAttribute("width") || "") || this.canvas.clientWidth || 100;
       this.setLeft(this.area.tx * ratio);
@@ -524,18 +524,18 @@ export default class PainterroSelecter implements IPainterroSelecter {
       this.setRight(this.area.el.clientWidth - (this.area.bx - this.area.tx) * ratio);
       this.setBottom(this.area.el.clientHeight - (this.area.by - this.area.ty) * ratio);
     }
-  }
+  };
 
-  rectLeft() {
+  rectLeft = () => {
     return this.area.rect.documentOffsetLeft + this.main.scroller.scrollLeft;
-  }
+  };
 
-  rectTop() {
+  rectTop = () => {
     return this.area.rect.documentOffsetTop + this.main.scroller.scrollTop;
-  }
+  };
 
   /* fixers */
-  fixCropperLeft(left: number) {
+  fixCropperLeft = (left: number) => {
     let newLeft = left;
     const absLeftMiddle = this.rectLeft() + this.area.rect.clientWidth;
     if (newLeft < this.main.elLeft()) {
@@ -548,9 +548,9 @@ export default class PainterroSelecter implements IPainterroSelecter {
       }
     }
     return newLeft;
-  }
+  };
 
-  fixCropperRight(right: number) {
+  fixCropperRight = (right: number) => {
     let newRight = right;
     const absRightLimit = this.main.elLeft() + this.area.el.clientWidth;
     if (newRight > absRightLimit) {
@@ -563,9 +563,9 @@ export default class PainterroSelecter implements IPainterroSelecter {
       }
     }
     return newRight;
-  }
+  };
 
-  fixCropperTop(top: number) {
+  fixCropperTop = (top: number) => {
     let newTop = top;
     const absTopMiddle = this.rectTop() + this.area.rect.clientHeight;
     if (newTop < this.main.elTop()) {
@@ -578,9 +578,9 @@ export default class PainterroSelecter implements IPainterroSelecter {
       }
     }
     return newTop;
-  }
+  };
 
-  fixCropperBottom(bottom: number) {
+  fixCropperBottom = (bottom: number) => {
     let newBottom = bottom;
     const absBottomLimit = this.main.elTop() + this.area.el.clientHeight;
     if (newBottom > absBottomLimit) {
@@ -593,5 +593,5 @@ export default class PainterroSelecter implements IPainterroSelecter {
       }
     }
     return newBottom;
-  }
+  };
 }

@@ -1,12 +1,12 @@
 import html2canvas from "html2canvas";
-import { Tr } from "src/langs/lang";
-import { anyType, DocumentHelper, Font, Hotkey, ITextTool, Main } from "./interfaces";
+import { Tr } from "../langs/lang";
+import { anyType, DocumentHelper, Font, Hotkey, IMain, ITextTool } from "./interfaces";
 import { tr } from "./translation";
 
 export default class TextTool implements ITextTool {
   private ctx: CanvasRenderingContext2D;
   private el: HTMLDivElement;
-  private main: Main;
+  private main: IMain;
   private wrapper: HTMLDivElement;
   private input: HTMLInputElement & DocumentHelper;
   private inputWrapper: HTMLDivElement;
@@ -23,7 +23,7 @@ export default class TextTool implements ITextTool {
   private pendingClear: boolean = false;
   private scaledCord: number[] = [];
 
-  constructor(main: Main) {
+  constructor(main: IMain) {
     this.ctx = main.ctx;
     this.el = main.toolContainer;
     this.main = main;
@@ -48,11 +48,11 @@ export default class TextTool implements ITextTool {
     };
   }
 
-  getFont(): string {
+  getFont = (): string => {
     return this.font;
-  }
+  };
 
-  getFonts(): Font[] {
+  getFonts = (): Font[] => {
     const fonts = [
       "Arial, Helvetica, sans-serif",
       '"Arial Black", Gadget, sans-serif',
@@ -80,9 +80,9 @@ export default class TextTool implements ITextTool {
       }
     });
     return res;
-  }
+  };
 
-  setFont(font: string) {
+  setFont = (font: string) => {
     this.font = font;
     anyType(this.input.style)["font-family"] = font;
     if (this.active) {
@@ -91,14 +91,14 @@ export default class TextTool implements ITextTool {
     if (this.active) {
       this.reLimit();
     }
-  }
+  };
 
-  setStrokeOn(state: boolean) {
+  setStrokeOn = (state: boolean) => {
     this.strokeOn = state;
     this.setStrokeParams();
-  }
+  };
 
-  setFontIsBold(state: boolean) {
+  setFontIsBold = (state: boolean) => {
     this.isBold = state;
     if (state) {
       anyType(this.input.style)["font-weight"] = "bold";
@@ -110,9 +110,9 @@ export default class TextTool implements ITextTool {
       this.reLimit();
     }
     this.setStrokeParams();
-  }
+  };
 
-  setFontIsItalic(state: boolean) {
+  setFontIsItalic = (state: boolean) => {
     this.isItalic = state;
     if (state) {
       anyType(this.input.style)["font-style"] = "italic";
@@ -123,18 +123,18 @@ export default class TextTool implements ITextTool {
       this.input.focus();
       this.reLimit();
     }
-  }
+  };
 
-  setFontSize(size: number) {
+  setFontSize = (size: number) => {
     this.fontSize = size;
     anyType(this.input.style)["font-size"] = `${size}px`;
     this.setStrokeParams();
     if (this.active) {
       this.reLimit();
     }
-  }
+  };
 
-  setStrokeParams() {
+  setStrokeParams = () => {
     if (this.strokeOn && this.strokeColor) {
       const st = 1;
       anyType(this.input.style)["text-shadow"] = `
@@ -144,23 +144,23 @@ export default class TextTool implements ITextTool {
     } else {
       anyType(this.input.style)["text-shadow"] = "none";
     }
-  }
+  };
 
-  setFontColor(color: string) {
+  setFontColor = (color: string) => {
     this.color = color;
     this.input.style.color = color;
     anyType(this.input.style)["outline-color"] = color;
-  }
+  };
 
-  inputLeft() {
+  inputLeft = () => {
     return this.input.documentOffsetLeft + this.main.scroller.scrollLeft;
-  }
+  };
 
-  inputTop() {
+  inputTop = () => {
     return this.input.documentOffsetTop + this.main.scroller.scrollTop;
-  }
+  };
 
-  reLimit() {
+  reLimit = () => {
     this.inputWrapper.style.right = "auto";
     if (this.inputLeft() + this.input.clientWidth > this.main.elLeft() + this.el.clientWidth) {
       this.inputWrapper.style.right = "0";
@@ -174,9 +174,9 @@ export default class TextTool implements ITextTool {
     } else {
       this.inputWrapper.style.bottom = "auto";
     }
-  }
+  };
 
-  handleMouseDown(event: MouseEvent) {
+  handleMouseDown = (event: MouseEvent) => {
     const mainClass = (event.target as HTMLElement)?.classList[0];
     if (mainClass === "ptro-crp-el") {
       if (!this.active) {
@@ -215,9 +215,9 @@ export default class TextTool implements ITextTool {
         event.preventDefault();
       }
     }
-  }
+  };
 
-  hiddenInputClone() {
+  hiddenInputClone = () => {
     const clone = this.input.cloneNode(true) as HTMLDivElement;
     const style = clone.style;
     style.position = "fixed";
@@ -225,9 +225,9 @@ export default class TextTool implements ITextTool {
     style.left = "0";
     document.body.appendChild(clone);
     return clone;
-  }
+  };
 
-  async apply(): Promise<void> {
+  apply = async (): Promise<void> => {
     const origBorder = this.input.style.border;
     const scale = this.main.getScale();
     this.input.style.border = "none";
@@ -244,14 +244,14 @@ export default class TextTool implements ITextTool {
     this.close();
     this.main.worklog.captureState();
     this.main.closeActiveTool();
-  }
+  };
 
-  close() {
+  close = () => {
     this.active = false;
     this.inputWrapper.style.display = "none";
-  }
+  };
 
-  static code() {
+  static code = () => {
     return (
       '<span class="ptro-text-tool-input-wrapper">' +
       '<div contenteditable="true" class="ptro-text-tool-input"></div>' +
@@ -267,5 +267,5 @@ export default class TextTool implements ITextTool {
       "</span>" +
       "</span>"
     );
-  }
+  };
 }

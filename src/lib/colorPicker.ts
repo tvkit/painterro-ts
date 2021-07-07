@@ -1,4 +1,4 @@
-import { AddCallback, anyType, ColorPickerCallback, ColorWidget, DocumentHelper, Hotkey, IColorPicker, Main } from "./interfaces";
+import { AddCallback, anyType, ColorPickerCallback, ColorWidget, DocumentHelper, Hotkey, IColorPicker, IMain } from "./interfaces";
 import { tr } from "./translation";
 
 export interface RGBA {
@@ -54,7 +54,7 @@ function reversedColor(color: string): string {
 }
 
 export default class ColorPicker implements IColorPicker {
-  private main: Main;
+  private main: IMain;
   private callback: ColorPickerCallback;
   private w: number;
   private h: number;
@@ -87,7 +87,7 @@ export default class ColorPicker implements IColorPicker {
   private alphaColor?: string;
   private alphaPosition: number = 0;
 
-  constructor(main: Main, callback: ColorPickerCallback) {
+  constructor(main: IMain, callback: ColorPickerCallback) {
     this.callback = callback;
     this.main = main;
     this.w = 180;
@@ -147,7 +147,7 @@ export default class ColorPicker implements IColorPicker {
     };
   }
 
-  open(state: ColorWidget, addCallback?: AddCallback): void {
+  open = (state: ColorWidget, addCallback?: AddCallback): void => {
     this.target = state.target;
     this.palleteColor = state.palleteColor || "";
     this.alpha = state.alpha === undefined ? 1 : state.alpha;
@@ -161,14 +161,14 @@ export default class ColorPicker implements IColorPicker {
     this.wrapper.removeAttribute("hidden");
     this.opened = true;
     this.addCallback = addCallback;
-  }
+  };
 
-  close(): void {
+  close = (): void => {
     this.wrapper.setAttribute("hidden", "true");
     this.opened = false;
-  }
+  };
 
-  getPaletteColorAtPoint(e: MouseEvent): void {
+  getPaletteColorAtPoint = (e: MouseEvent): void => {
     let x = e.clientX - this.canvas.documentOffsetLeft;
     let y = e.clientY - this.canvas.documentOffsetTop;
     x = (x < 1 && 1) || x;
@@ -179,39 +179,39 @@ export default class ColorPicker implements IColorPicker {
     this.palleteColor = rgbToHex(p[0]!, p[1]!, p[2]!);
     this.drawLighter();
     this.regetColor();
-  }
+  };
 
-  regetColor(): void {
+  regetColor = (): void => {
     const p = this.ctxLight.getImageData(this.lightPosition, 5, 1, 1).data;
     this.setActiveColor(rgbToHex(p[0]!, p[1]!, p[2]!));
     this.drawAlpher();
-  }
+  };
 
-  regetAlpha(): void {
+  regetAlpha = (): void => {
     const p = this.ctxAlpha.getImageData(this.alphaPosition, 5, 1, 1).data;
     this.alpha = p[3]! / 255;
     this.setActiveColor(this.color, true);
-  }
+  };
 
-  getColorLightAtClick(e: MouseEvent): void {
+  getColorLightAtClick = (e: MouseEvent): void => {
     let x = e.clientX - this.canvasLight.documentOffsetLeft;
     x = (x < 1 && 1) || x;
     x = (x > this.w - 1 && this.w - 1) || x;
     this.lightPosition = x;
     this.colorRegulator.style.left = `${x}px`;
     this.regetColor();
-  }
+  };
 
-  getAlphaAtClick(e: MouseEvent): void {
+  getAlphaAtClick = (e: MouseEvent): void => {
     let x = e.clientX - this.canvasAlpha.documentOffsetLeft;
     x = (x < 1 && 1) || x;
     x = (x > this.w - 1 && this.w - 1) || x;
     this.alphaPosition = x;
     this.alphaRegulator.style.left = `${x}px`;
     this.regetAlpha();
-  }
+  };
 
-  handleKeyDown(event: KeyboardEvent): boolean {
+  handleKeyDown = (event: KeyboardEvent): boolean => {
     if (this.opened && event.keyCode === Hotkey.enter) {
       return true; // mark as handled - user might expect doing save by enter
     }
@@ -220,9 +220,9 @@ export default class ColorPicker implements IColorPicker {
       return true;
     }
     return false;
-  }
+  };
 
-  handleMouseDown(e: MouseEvent): boolean {
+  handleMouseDown = (e: MouseEvent): boolean => {
     if (this.choosing && e.button !== 2) {
       // 0 - m1, 1 middle, 2-m2
       this.choosingActive = true;
@@ -243,9 +243,9 @@ export default class ColorPicker implements IColorPicker {
       this.getAlphaAtClick(e);
     }
     return false;
-  }
+  };
 
-  handleMouseMove(e: MouseEvent): void {
+  handleMouseMove = (e: MouseEvent): void => {
     if (this.opened) {
       if (this.selecting) {
         this.getPaletteColorAtPoint(e);
@@ -283,18 +283,18 @@ export default class ColorPicker implements IColorPicker {
         });
       }
     }
-  }
+  };
 
-  handleMouseUp(_e: Event): void {
+  handleMouseUp = (_e: Event): void => {
     this.selecting = false;
     this.lightSelecting = false;
     this.choosing = false;
     this.choosingActive = false;
     this.alphaSelecting = false;
     this.main.zoomHelper.hideZoomHelper();
-  }
+  };
 
-  setActiveColor(color: string, ignoreUpdateText?: boolean): void {
+  setActiveColor = (color: string, ignoreUpdateText?: boolean): void => {
     try {
       this.input.style.color = reversedColor(color);
     } catch (e) {
@@ -324,9 +324,9 @@ export default class ColorPicker implements IColorPicker {
         target: this.target,
       });
     }
-  }
+  };
 
-  static html(): string {
+  static html = (): string => {
     return (
       "" +
       '<div class="ptro-color-widget-wrapper ptro-common-widget-wrapper ptro-v-middle" hidden>' +
@@ -349,9 +349,9 @@ export default class ColorPicker implements IColorPicker {
       "</div>" +
       "</div>"
     );
-  }
+  };
 
-  drawLighter(): void {
+  drawLighter = (): void => {
     const lightGradient = this.ctxLight.createLinearGradient(0, 0, this.w, 0);
     lightGradient.addColorStop(0, "#ffffff");
     lightGradient.addColorStop(0.05, "#ffffff");
@@ -359,9 +359,9 @@ export default class ColorPicker implements IColorPicker {
     lightGradient.addColorStop(1, this.palleteColor);
     this.ctxLight.fillStyle = lightGradient;
     this.ctxLight.fillRect(0, 0, this.w, 15);
-  }
+  };
 
-  drawAlpher(): void {
+  drawAlpher = (): void => {
     this.ctxAlpha.clearRect(0, 0, this.w, 15);
     const lightGradient = this.ctxAlpha.createLinearGradient(0, 0, this.w, 0);
     lightGradient.addColorStop(0, "rgba(255,255,255,0)");
@@ -370,5 +370,5 @@ export default class ColorPicker implements IColorPicker {
     lightGradient.addColorStop(1, this.color);
     this.ctxAlpha.fillStyle = lightGradient;
     this.ctxAlpha.fillRect(0, 0, this.w, 15);
-  }
+  };
 }

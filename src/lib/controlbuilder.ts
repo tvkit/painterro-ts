@@ -1,13 +1,13 @@
-import { Control, ControlValue, ControlValues, Main } from "./interfaces";
+import { Control, ControlValue, ControlValues, IMain } from "./interfaces";
 import { setParam } from "./params";
 
 export default class ControlBuilder {
-  private main: Main;
-  constructor(main: Main) {
+  private main: IMain;
+  constructor(main: IMain) {
     this.main = main;
   }
 
-  buildFontSizeControl(controlIndex: number) {
+  buildFontSizeControl = (controlIndex: number) => {
     const action = () => {
       const el = this.main.getElemByIdSafe(this.main.activeTool?.controls[controlIndex]?.id);
       const fontSize = parseInt(el.value) || 10; // TODO default
@@ -20,9 +20,9 @@ export default class ControlBuilder {
       return ControlBuilder.buildDropDownControl("fontSize", action, getValue, this.main.params.availableFontSizes);
     }
     return ControlBuilder.buildInputControl("fontSize", action, getValue, 1, 200);
-  }
+  };
 
-  buildEraserWidthControl(controlIndex: number) {
+  buildEraserWidthControl = (controlIndex: number) => {
     const action = () => {
       const width = this.main.getElemByIdSafe(this.main.activeTool?.controls[controlIndex]?.id).value;
       this.main.primitiveTool.setEraserWidth(parseInt(width) || 5); // TODO default
@@ -34,9 +34,9 @@ export default class ControlBuilder {
       return ControlBuilder.buildDropDownControl("eraserWidth", action, getValue, this.main.params.availableEraserWidths);
     }
     return ControlBuilder.buildInputControl("eraserWidth", action, getValue, 1, 99);
-  }
+  };
 
-  buildLineWidthControl(controlIndex: number): Control {
+  buildLineWidthControl = (controlIndex: number): Control => {
     const action = () => {
       const width = this.main.getElemByIdSafe(this.main.activeTool?.controls[controlIndex]?.id).value;
       this.main.primitiveTool.setLineWidth(parseInt(width) || 2);
@@ -48,9 +48,9 @@ export default class ControlBuilder {
       return ControlBuilder.buildDropDownControl("lineWidth", action, getValue, this.main.params.availableLineWidths);
     }
     return ControlBuilder.buildInputControl("lineWidth", action, getValue, 0, 99);
-  }
+  };
 
-  buildShadowOnControl(controlIndex: number) {
+  buildShadowOnControl = (controlIndex: number) => {
     return {
       type: "bool",
       title: "shadowOn",
@@ -65,9 +65,9 @@ export default class ControlBuilder {
       },
       getValue: () => this.main.primitiveTool.shadowOn,
     };
-  }
+  };
 
-  buildArrowLengthControl(controlIndex: number) {
+  buildArrowLengthControl = (controlIndex: number) => {
     const action = () => {
       const width = this.main.getElemByIdSafe(this.main.activeTool?.controls[controlIndex]?.id).value;
       this.main.primitiveTool.setArrowLength(parseInt(width) || 10); // TODO default
@@ -79,7 +79,7 @@ export default class ControlBuilder {
       return ControlBuilder.buildDropDownControl("arrowLength", action, getValue, this.main.params.availableArrowLengths);
     }
     return ControlBuilder.buildInputControl("arrowLength", action, getValue, 1, 99);
-  }
+  };
 
   static buildInputControl(name: string, action: () => void, getValue: () => ControlValue, minVal: number, maxVal: number): Control {
     return {

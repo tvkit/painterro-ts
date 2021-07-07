@@ -1,10 +1,10 @@
-import { def, Hotkey, Main } from "#interfaces";
+import { def, Hotkey, IMain } from "./interfaces";
 import { setParam } from "./params";
 import { tr } from "./translation";
 import { trim } from "./utils";
 
 export default class Settings {
-  private main: Main;
+  private main: IMain;
   private wrapper: HTMLDivElement;
   private inputPixelSize: HTMLInputElement;
   private applyButton: HTMLButtonElement;
@@ -14,7 +14,7 @@ export default class Settings {
   private errorHolder: HTMLElement;
   private opened: boolean = false;
 
-  constructor(main: Main) {
+  constructor(main: IMain) {
     this.main = main;
 
     this.wrapper = main.wrapper.querySelector(".ptro-settings-widget-wrapper") as HTMLDivElement;
@@ -98,7 +98,7 @@ export default class Settings {
   }
 
   /* eslint-disable */
-  static html(main: Main) {
+  static html(main: IMain) {
     return (
       "" +
       '<div class="ptro-settings-widget-wrapper ptro-common-widget-wrapper ptro-v-middle" hidden>' +

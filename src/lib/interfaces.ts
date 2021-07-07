@@ -235,7 +235,7 @@ export interface IPrimitiveTool extends IEventDelegate {
 }
 
 export interface IResizer extends IEventDelegate {
-  main: Main;
+  main: IMain;
 }
 
 export type ControlValue = string | number | boolean;
@@ -323,7 +323,7 @@ export interface ColorWidgetState {
   bg: ColorWidget;
 }
 
-export interface Main {
+export interface IMain {
   id: string;
   doc: Document;
   isMobile: boolean;

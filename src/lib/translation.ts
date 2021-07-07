@@ -1,9 +1,4 @@
-import {
-  IPasteOptionsTranslation,
-  IStringsTranslation,
-  IToolsTranslation,
-  ITranslation,
-} from "src/langs/lang";
+import { IPasteOptionsTranslation, IStringsTranslation, IToolsTranslation, ITranslation } from "src/langs/lang";
 import ca from "../langs/ca.lang";
 import de from "../langs/de.lang";
 import en from "../langs/en.lang";
@@ -22,8 +17,7 @@ interface Dictionary {
   [index: string]: string;
 }
 
-const dict = (t: IStringsTranslation | IToolsTranslation | IPasteOptionsTranslation) =>
-  t as unknown as Dictionary;
+const dict = (t: IStringsTranslation | IToolsTranslation | IPasteOptionsTranslation) => t as unknown as Dictionary;
 
 export default class Translation {
   private translations: { [index: string]: ITranslation };
@@ -48,19 +42,19 @@ export default class Translation {
     this.name = this.translator.name;
   }
 
-  static get(): Translation {
+  static get = (): Translation => {
     if (instance) {
       return instance;
     }
     instance = new Translation();
     return instance;
-  }
+  };
 
-  addTranslation(name: string, trans: ITranslation): void {
+  addTranslation = (name: string, trans: ITranslation): void => {
     this.translations[name] = trans;
-  }
+  };
 
-  activate(name: string): ITranslation {
+  activate = (name: string): ITranslation => {
     const translator = this.translations[name];
     if (translator) {
       this.name = name;
@@ -69,9 +63,9 @@ export default class Translation {
       this.translator = this.defaultTranslator;
     }
     return this.translator;
-  }
+  };
 
-  tr(n: string): string {
+  tr = (n: string): string => {
     const levels = n.split(".");
     if (levels.length === 1) {
       levels.unshift("s");
@@ -90,7 +84,7 @@ export default class Translation {
       default:
         return "?";
     }
-  }
+  };
 }
 
 export function activate(name: string): ITranslation {

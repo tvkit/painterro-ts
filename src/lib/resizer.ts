@@ -1,8 +1,8 @@
-import { Hotkey, IResizer, Main } from "#interfaces";
+import { Hotkey, IMain, IResizer } from "./interfaces";
 import { tr } from "./translation";
 
 export default class Resizer implements IResizer {
-  public main: Main;
+  public main: IMain;
   private wrapper: HTMLDivElement;
   private inputW: HTMLInputElement;
   private inputH: HTMLInputElement;
@@ -18,7 +18,7 @@ export default class Resizer implements IResizer {
   private newH: number = 200; // TODO default
   private newW: number = 200;
 
-  constructor(main: Main) {
+  constructor(main: IMain) {
     this.main = main;
 
     this.wrapper = main.wrapper.querySelector(".ptro-resize-widget-wrapper") as HTMLDivElement;
@@ -107,29 +107,29 @@ export default class Resizer implements IResizer {
     };
   }
 
-  validationWidthValue(value: number) {
+  validationWidthValue = (value: number) => {
     return value <= this.inputWLimit;
-  }
+  };
 
-  validationHeightValue(value: number) {
+  validationHeightValue = (value: number) => {
     return value <= this.inputHLimit;
-  }
+  };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static validationEmptyValue(value: any) {
+  static validationEmptyValue = (value: any) => {
     return value !== "" || value !== "0"; // TODO always true
-  }
+  };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static validationZeroValue(...args: any[]) {
+  static validationZeroValue = (...args: any[]) => {
     let isValid = true;
     args.forEach((v) => {
       isValid = !(v === 0) && isValid;
     });
     return isValid;
-  }
+  };
 
-  validationHeight(value: number) {
+  validationHeight = (value: number) => {
     if (this.validationHeightValue(value)) {
       this.newH = value;
     } else {
@@ -144,9 +144,9 @@ export default class Resizer implements IResizer {
       this.inputH.value = "0";
       this.newH = 0;
     }
-  }
+  };
 
-  validationWidth(value: number) {
+  validationWidth = (value: number) => {
     if (this.validationWidthValue(value)) {
       this.newW = value;
     } else {
@@ -161,27 +161,27 @@ export default class Resizer implements IResizer {
       this.inputW.value = "0";
       this.newW = 0;
     }
-  }
+  };
 
-  open() {
+  open = () => {
     this.wrapper.removeAttribute("hidden");
     this.opened = true;
     this.newW = this.main.size.w;
     this.newH = this.main.size.h;
     this.inputW.value = String(this.newW);
     this.inputH.value = String(this.newH);
-  }
+  };
 
-  close() {
+  close = () => {
     this.wrapper.setAttribute("hidden", "true");
     this.opened = false;
-  }
+  };
 
-  startClose() {
+  startClose = () => {
     this.main.closeActiveTool();
-  }
+  };
 
-  handleKeyDown(event: KeyboardEvent) {
+  handleKeyDown = (event: KeyboardEvent) => {
     if (event.keyCode === Hotkey.enter) {
       return true; // mark as handled - user might expect doing save by enter
     }
@@ -190,9 +190,9 @@ export default class Resizer implements IResizer {
       return true;
     }
     return false;
-  }
+  };
 
-  static html() {
+  static html = () => {
     return (
       "" +
       '<div class="ptro-resize-widget-wrapper ptro-common-widget-wrapper ptro-v-middle" hidden>' +
@@ -230,5 +230,5 @@ export default class Resizer implements IResizer {
       "</div>" +
       "</div>"
     );
-  }
+  };
 }

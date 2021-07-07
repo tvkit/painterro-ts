@@ -1,5 +1,5 @@
-import { Tr } from "src/langs/lang";
-import { Hotkey, IInserter, IWorklog, Main } from "./interfaces";
+import { Tr } from "../langs/lang";
+import { Hotkey, IInserter, IMain, IWorklog } from "./interfaces";
 import { tr } from "./translation";
 import { genId, imgToDataURL } from "./utils";
 
@@ -16,7 +16,7 @@ interface PasteOptions {
 }
 
 export default class Inserter implements IInserter {
-  private main: Main;
+  private main: IMain;
   private ctx: CanvasRenderingContext2D;
   private tmpImg?: HTMLImageElement;
   private worklog: IWorklog;
@@ -29,7 +29,7 @@ export default class Inserter implements IInserter {
   private loading: boolean = false;
   private doLater: PasteHandler | null = null;
 
-  constructor(main: Main) {
+  constructor(main: IMain) {
     this.main = main;
     this.ctx = main.ctx;
     this.worklog = main.worklog;
@@ -168,7 +168,7 @@ export default class Inserter implements IInserter {
     this.activeOption = this.pasteOptions;
   }
 
-  init(main: Main) {
+  init = (main: IMain) => {
     // this.CLIP_DATA_MARKER = "painterro-image-data";
     this.ctx = main.ctx;
     this.main = main;
@@ -192,21 +192,21 @@ export default class Inserter implements IInserter {
     });
     this.loading = false;
     this.doLater = null;
-  }
+  };
 
-  insert(x: number, y: number, w: number, h: number): void {
+  insert = (x: number, y: number, w: number, h: number): void => {
     if (this.tmpImg) {
       this.main.ctx.drawImage(this.tmpImg, x, y, w, h);
       this.main.worklog.reCaptureState();
     }
-  }
+  };
 
-  cancelChoosing() {
+  cancelChoosing = () => {
     this.selector?.setAttribute("hidden", "");
     this.waitChoice = false;
-  }
+  };
 
-  loaded(img: HTMLImageElement, mimetype?: string) {
+  loaded = (img: HTMLImageElement, mimetype?: string) => {
     this.img = img;
     this.mimetype = mimetype || "";
     this.loading = false;
@@ -214,9 +214,9 @@ export default class Inserter implements IInserter {
       this.doLater(img);
       this.doLater = null;
     }
-  }
+  };
 
-  getAvailableOptions(): string[] {
+  getAvailableOptions = (): string[] => {
     const activeOption = this.activeOption;
     if (!activeOption) {
       return [];
@@ -227,9 +227,9 @@ export default class Inserter implements IInserter {
       return Object.keys(activeOption).filter((actionName) => howToPasteActions.includes(actionName));
     }
     return Object.keys(this.activeOption);
-  }
+  };
 
-  handleOpen(src: string, mimetype?: string) {
+  handleOpen = (src: string, mimetype?: string) => {
     this.startLoading();
     const handleIt = (source: string | ArrayBuffer | null) => {
       if (typeof source !== "string") {
@@ -282,9 +282,9 @@ export default class Inserter implements IInserter {
     } else {
       handleIt(src);
     }
-  }
+  };
 
-  handleKeyDown(evt: KeyboardEvent): boolean {
+  handleKeyDown = (evt: KeyboardEvent): boolean => {
     if (this.waitChoice && evt.keyCode === Hotkey.esc) {
       this.cancelChoosing();
       return true;
@@ -293,9 +293,9 @@ export default class Inserter implements IInserter {
       return true; // mark as handled - user might expect doing save by enter
     }
     return false;
-  }
+  };
 
-  startLoading() {
+  startLoading = () => {
     this.loading = true;
     const buttonId = this.main.tools.open.buttonId;
     if (buttonId) {
@@ -308,9 +308,9 @@ export default class Inserter implements IInserter {
         icon.className = "ptro-icon ptro-icon-loading ptro-spinning";
       }
     }
-  }
+  };
 
-  finishLoading() {
+  finishLoading = () => {
     const buttonId = this.main.tools.open.buttonId;
     if (buttonId) {
       const btn = this.main.getElemByIdSafe(buttonId);
@@ -325,28 +325,29 @@ export default class Inserter implements IInserter {
     if (this.main.params.onImageLoaded) {
       this.main.params.onImageLoaded();
     }
-  }
+  };
 
-  static get(main: Main) {
+  static get = (main: IMain) => {
     if (main.inserter) {
       return main.inserter;
     }
     main.inserter = new Inserter(main);
     return main.inserter;
-  }
+  };
 
-  static controlObjToString(o: PasteOption, btnClassName = "") {
+  static controlObjToString = (o: PasteOption, btnClassName = "") => {
     const tempObj = o;
     tempObj.id = genId(); // TODO tempObj intentions?
+    const id = tempObj.id;
     return (
-      `<button type="button" id="${o.id}" class="ptro-selector-btn ptro-color-control ${btnClassName}">` +
+      `<button type="button" id="${o.id || id}" class="ptro-selector-btn ptro-color-control ${btnClassName}">` +
       `<div><i class="ptro-icon ptro-icon-paste_${o.internalName}"></i></div>` +
       `<div>${tr(`pasteOptions.${o.internalName}`)}</div>` +
       "</button>"
     );
-  }
+  };
 
-  html() {
+  html = () => {
     const bcklOptions = this.main.params.backplateImgUrl;
     let fitControls = "";
     let extendControls = "";
@@ -383,5 +384,5 @@ export default class Inserter implements IInserter {
         </div>
       </div></div></div>`
     );
-  }
+  };
 }

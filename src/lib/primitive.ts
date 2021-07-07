@@ -1,4 +1,4 @@
-import { IPrimitiveTool, Main, Point } from "#interfaces";
+import { IMain, IPrimitiveTool, Point } from "./interfaces";
 
 interface State {
   cornerMarked?: boolean;
@@ -9,7 +9,7 @@ export default class PrimitiveTool implements IPrimitiveTool {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private el: HTMLDivElement;
-  private main: Main;
+  private main: IMain;
   private type: string = "";
   public lineWidth: number = 2; // TODO default
   public shadowOn: boolean = true; // TODO default
@@ -22,7 +22,7 @@ export default class PrimitiveTool implements IPrimitiveTool {
   private curCord: number[] = [];
   private pixelSize: number = 1;
 
-  constructor(main: Main) {
+  constructor(main: IMain) {
     this.ctx = main.ctx;
     this.el = main.toolContainer;
     this.main = main;
@@ -30,7 +30,7 @@ export default class PrimitiveTool implements IPrimitiveTool {
     this.canvas = main.canvas;
   }
 
-  activate(type: string) {
+  activate = (type: string) => {
     this.type = type;
     this.state = {};
     if (type === "line" || type === "brush" || type === "eraser" || type === "arrow") {
@@ -38,9 +38,9 @@ export default class PrimitiveTool implements IPrimitiveTool {
     } else {
       this.ctx.lineJoin = "miter";
     }
-  }
+  };
 
-  setLineWidth(width: number) {
+  setLineWidth = (width: number) => {
     const w = Math.round(width);
     //if (`${width}`.match(/^\d+$/)) {
     if (w > 0) {
@@ -48,21 +48,21 @@ export default class PrimitiveTool implements IPrimitiveTool {
     } else {
       throw Error(`WARN: STR "${width}" is not an int`);
     }
-  }
+  };
 
-  setShadowOn(state: boolean): void {
+  setShadowOn = (state: boolean): void => {
     this.shadowOn = state;
-  }
+  };
 
-  setArrowLength(length: number) {
+  setArrowLength = (length: number) => {
     this.arrowLength = length;
-  }
+  };
 
-  setEraserWidth(width: number) {
+  setEraserWidth = (width: number) => {
     this.eraserWidth = width;
-  }
+  };
 
-  handleMouseDown(event: MouseEvent) {
+  handleMouseDown = (event: MouseEvent) => {
     this.activate(this.type);
     const mainClass = (event.target as HTMLElement).classList[0];
 
@@ -92,9 +92,9 @@ export default class PrimitiveTool implements IPrimitiveTool {
         this.centerCord = [(this.centerCord[0] || 0) * scale, (this.centerCord[1] || 0) * scale];
       }
     }
-  }
+  };
 
-  drawBrushPath() {
+  drawBrushPath = () => {
     const points = this.points;
     const point0 = this.points[0];
     if (!point0) {
@@ -140,9 +140,9 @@ export default class PrimitiveTool implements IPrimitiveTool {
       }
     }
     this.ctx.globalCompositeOperation = origComposition;
-  }
+  };
 
-  handleMouseMove(event: MouseEvent) {
+  handleMouseMove = (event: MouseEvent) => {
     const ctx = this.ctx;
     if (this.state.cornerMarked && this.tmpData) {
       this.ctx.putImageData(this.tmpData, 0, 0);
@@ -352,16 +352,16 @@ export default class PrimitiveTool implements IPrimitiveTool {
 
       this.curCord = [curX, curY];
     }
-  }
+  };
 
-  handleMouseUp() {
+  handleMouseUp = () => {
     if (this.state.cornerMarked) {
       this.state.cornerMarked = false;
       this.main.worklog.captureState();
     }
-  }
+  };
 
-  setPixelSize(size: number) {
+  setPixelSize = (size: number) => {
     this.pixelSize = size;
-  }
+  };
 }

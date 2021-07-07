@@ -1,7 +1,7 @@
-import { DocumentHelper, Main } from "./interfaces";
+import { DocumentHelper, IMain } from "./interfaces";
 
 export default class ZoomHelper {
-  private main: Main;
+  private main: IMain;
   private zomer: HTMLCanvasElement;
   private zomerCtx: CanvasRenderingContext2D;
   private ctx: CanvasRenderingContext2D;
@@ -17,7 +17,7 @@ export default class ZoomHelper {
   private cursor: string;
   private shown: boolean = false;
 
-  constructor(main: Main) {
+  constructor(main: IMain) {
     this.main = main;
     this.zomer = main.wrapper.querySelector(".ptro-zoomer")!;
     this.zomerCtx = this.zomer.getContext("2d")!;
@@ -48,7 +48,7 @@ export default class ZoomHelper {
     this.cursor = this.wrapper.style.cursor;
   }
 
-  handleMouseMove(e: MouseEvent) {
+  handleMouseMove = (e: MouseEvent) => {
     if (this.main.colorPicker.choosing && !e.altKey) {
       if (!this.shown) {
         this.shown = true;
@@ -96,15 +96,15 @@ export default class ZoomHelper {
     } else if (this.shown) {
       this.hideZoomHelper();
     }
-  }
+  };
 
-  hideZoomHelper() {
+  hideZoomHelper = () => {
     this.zomer.style.display = "none";
     this.wrapper.style.cursor = this.cursor;
     this.shown = false;
-  }
+  };
 
-  static html() {
+  static html = () => {
     return '<canvas class="ptro-zoomer" width="" height="0"></canvas>';
-  }
+  };
 }

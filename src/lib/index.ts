@@ -1,6 +1,5 @@
-export const sum = (a: number, b: number) => {
-  if ('development' === process.env.NODE_ENV) {
-    console.log('boop');
-  }
-  return a + b;
-};
+import factory from "./main";
+
+export default factory;
+export { Painterro } from "./main";
+export { Parameters } from "./interfaces";
