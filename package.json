@@ -37,6 +37,10 @@
     "prepublishOnly": "yarn -s build"
   },
   "dependencies": {
+    "@types/html2canvas": "^0.0.36",
+    "@types/ismobilejs": "^1.0.1",
+    "html2canvas": "^1.0.0",
+    "ismobilejs": "^1.1.1",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
