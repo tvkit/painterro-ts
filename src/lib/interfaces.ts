@@ -110,8 +110,8 @@ export interface Parameters {
 }
 
 export interface ImageSaver {
-  asDataURL(type: string, quality: number): string;
-  asBlob(type: string, quality?: string | number): void;
+  asDataURL(type?: string, quality?: number): string;
+  asBlob(type?: string, quality?: string | number): Blob;
   getOriginalMimeType(): string;
   hasAlphaChannel(): boolean;
   suggestedFileName(type: string): string;

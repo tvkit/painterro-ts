@@ -1,4 +1,4 @@
-import factory, { Painterro, Parameters } from "./lib";
+import factory, { ImageSaver, Painterro, Parameters } from "./lib";
 
 export default factory;
-export { Painterro, Parameters };
+export { ImageSaver, Painterro, Parameters };

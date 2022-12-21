@@ -1,0 +1,49 @@
+diff --git a/src/index.ts b/src/index.ts
+index db39b6b..6b41ac7 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -1,4 +1,4 @@
+-import factory, { Painterro, Parameters } from "./lib";
++import factory, { ImageSaver, Painterro, Parameters } from "./lib";
+ 
+ export default factory;
+-export { Painterro, Parameters };
++export { ImageSaver, Painterro, Parameters };
+diff --git a/src/lib/index.ts b/src/lib/index.ts
+index de7fb22..5ef12ff 100644
+--- a/src/lib/index.ts
++++ b/src/lib/index.ts
+@@ -2,4 +2,4 @@ import factory from "./main";
+ 
+ export default factory;
+ export { Painterro } from "./main";
+-export { Parameters } from "./interfaces";
++export { ImageSaver, Parameters } from "./interfaces";
+diff --git a/src/lib/interfaces.ts b/src/lib/interfaces.ts
+index 5be8d9d..bc160c3 100644
+--- a/src/lib/interfaces.ts
++++ b/src/lib/interfaces.ts
+@@ -110,8 +110,8 @@ export interface Parameters {
+ }
+ 
+ export interface ImageSaver {
+-  asDataURL(type: string, quality: number): string;
+-  asBlob(type: string, quality?: string | number): void;
++  asDataURL(type?: string, quality?: number): string;
++  asBlob(type?: string, quality?: string | number): Blob;
+   getOriginalMimeType(): string;
+   hasAlphaChannel(): boolean;
+   suggestedFileName(type: string): string;
+diff --git a/src/lib/main.ts b/src/lib/main.ts
+index 0c94a8d..ef87053 100644
+--- a/src/lib/main.ts
++++ b/src/lib/main.ts
+@@ -828,7 +828,7 @@ class Main implements IMain, Painterro {
+         }
+         return this.getAsUri(realType, quality);
+       },
+-      asBlob: (type: string, quality: number) => {
++      asBlob: (type: string, quality: number): Blob => {
+         let realType = type;
+         if (realType === undefined) {
+           if (this.loadedImageType) {

@@ -828,7 +828,7 @@ class Main implements IMain, Painterro {
         }
         return this.getAsUri(realType, quality);
       },
-      asBlob: (type: string, quality: number) => {
+      asBlob: (type: string, quality: number): Blob => {
         let realType = type;
         if (realType === undefined) {
           if (this.loadedImageType) {
